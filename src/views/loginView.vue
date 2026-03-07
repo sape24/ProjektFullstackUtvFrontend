@@ -9,13 +9,15 @@ const username = ref('')
 const password = ref('')
 
 const login = async () => {
+  //asynkron funktion som körs när formuläret skickas
   try {
     const response = await api.post('/login', {
+      //Skickar användaruppgifter till backend för att logga in
       username: username.value,
       password: password.value,
     })
 
-    localStorage.setItem('token', response.data.token)
+    localStorage.setItem('token', response.data.token) //sparar JWT token från backend i localstorage
     router.push('/products')
   } catch (error) {
     const errorText = error.response?.data?.error || 'Fel lösenord eller användarnamn'
