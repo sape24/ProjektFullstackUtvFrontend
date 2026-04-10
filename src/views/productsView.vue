@@ -2,15 +2,11 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '@/services/api'
+import ProductForm from '@/components/productFormComponent.vue'
+import ProductTable from '@/components/productTableComponent.vue'
 
 const router = useRouter()
 const products = ref([]) //tom reaktiv array där alla produkter sparas
-
-const name = ref('') //reaktiva variabler för lägg till produkt formuläret
-const description = ref('')
-const category = ref('')
-const price = ref('')
-const stock = ref('')
 
 const getProducts = async () => {
   //funktion för att hämta ala produkter
@@ -26,28 +22,6 @@ const getProducts = async () => {
     } else {
       alert('Kunde inte hämta produkter')
     }
-  }
-}
-
-const addProduct = async () => {
-  try {
-    await api.post('/products', {
-      name: name.value,
-      description: description.value,
-      category: category.value,
-      price: Number(price.value), //säkertställer att pris skickas som nummer och inte text
-      stock: Number(stock.value),
-    })
-
-    name.value = '' //tömmer formuläret
-    description.value = ''
-    category.value = ''
-    price.value = ''
-    stock.value = ''
-
-    getProducts()
-  } catch (error) {
-    alert('Kunde inte lägga till produkten')
   }
 }
 
@@ -86,107 +60,9 @@ onMounted(() => {
 
 <template>
   <div class="container mt-5">
-    <div class="card shadow-sm mb-5">
-      <div class="card-body">
-        <h4 class="mb-3">Lägg till ny produkt</h4>
-        <form @submit.prevent="addProduct" class="row g-3">
-          <div class="col-md-2">
-            <input type="text" class="form-control" v-model="name" placeholder="Namn" required />
-          </div>
-          <div class="col-md-3">
-            <input
-              type="text"
-              class="form-control"
-              v-model="description"
-              placeholder="Beskrivning"
-              required
-            />
-          </div>
-          <div class="col-md-2">
-            <input
-              type="text"
-              class="form-control"
-              v-model="category"
-              placeholder="Kategori"
-              required
-            />
-          </div>
-          <div class="col-md-2">
-            <input
-              type="number"
-              class="form-control"
-              v-model="price"
-              placeholder="Pris (Kr)"
-              required
-            />
-          </div>
-          <div class="col-md-1">
-            <input
-              type="number"
-              class="form-control"
-              v-model="stock"
-              placeholder="Antal"
-              required
-            />
-          </div>
-          <div class="col-md-2">
-            <button type="submit" class="btn btn-success w-100">Lägg till</button>
-          </div>
-        </form>
-      </div>
-    </div>
-
+    <ProductForm @productAdded="getProducts" />
     <h2 class="mb-3">Lagersaldo</h2>
-    <div class="card shadow-sm">
-      <div class="card-body p-0">
-        <div class="table-responsive">
-          <table class="table table-hover mb-0 align-middle">
-            <thead class="table-dark">
-              <tr>
-                <th>Namn</th>
-                <th>Beskrivning</th>
-                <th>Kategori</th>
-                <th>Pris</th>
-                <th>Lager</th>
-                <th>Hantera</th>
-                <th>Ta bort</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="product in products" :key="product._id">
-                <!-- v-for loopar igenom hela array och skapar en ny tabellrad för varje produkt, använder key så vue kan hålla isär raderna-->
-                <td class="fw-bold">{{ product.name }}</td>
-                <td>{{ product.description }}</td>
-                <td>{{ product.category }}</td>
-                <td>{{ product.price }}</td>
-                <td>{{ product.stock }} st</td>
-                <td>
-                  <div class="d-flex align-items-center">
-                    <button
-                      class="btn btn-sm btn-outline-secondary me-2 fw-bold"
-                      @click="updateStock(product, -1)"
-                    >
-                      -
-                    </button>
-                    <button
-                      class="btn btn-sm btn-outline-secondary ms-2 fw-bold"
-                      @click="updateStock(product, 1)"
-                    >
-                      +
-                    </button>
-                  </div>
-                </td>
-                <td>
-                  <button class="btn btn-sm btn-danger" @click="deleteProduct(product._id)">
-                    Ta bort
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+    <ProductTable :products="products" @updateStock="updateStock" @deleteProduct="deleteProduct" />
   </div>
 </template>
 
